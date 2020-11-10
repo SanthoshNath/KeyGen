@@ -7,12 +7,60 @@ import (
 	log "github.com/sirupsen/logrus"
 	"keygen/key"
 	"os"
+	"strconv"
 )
 
 var filepath = "./"
 
 func main() {
-	if len(os.Args) == 1 {
+	parseCommand()
+
+	switch os.Args[1] {
+	case "rsa":
+		bits, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			handleError(errors.New("invalid key size"))
+		}
+
+		key := key.NewRSAKey(bits)
+
+		if err := key.Generate(); err != nil {
+			handleError(err)
+		}
+
+		if err := key.Export(filepath); err != nil {
+			handleError(err)
+		}
+
+	case "ecdsa":
+		var curve elliptic.Curve
+
+		if os.Args[2] == "P224" {
+			curve = elliptic.P224()
+		} else if os.Args[2] == "P256" {
+			curve = elliptic.P256()
+		} else if os.Args[2] == "P384" {
+			curve = elliptic.P384()
+		} else if os.Args[2] == "P521" {
+			curve = elliptic.P521()
+		} else {
+			handleError(errors.New("unsupported ecdsa curve"))
+		}
+
+		key := key.NewECDSAKey(curve)
+
+		if err := key.Generate(); err != nil {
+			handleError(err)
+		}
+
+		if err := key.Export(filepath); err != nil {
+			handleError(err)
+		}
+	}
+}
+
+func parseCommand() {
+	if len(os.Args) <= 1 {
 		handleError(errors.New("command not found"))
 	}
 
@@ -26,39 +74,17 @@ func main() {
 				handleError(errors.New("invalid path"))
 			}
 		}()
-		filepath = os.Args[3]
+		filepath = os.Args[4]
 	}
 
-	switch os.Args[1] {
-	case "rsa":
-		key := key.NewRSAKey(2048)
-
-		log.Info("Generating Keys")
-		if err := key.Generate(); err != nil {
-			handleError(err)
-		}
-
-		log.Info("Exporting Keys")
-		if err := key.Export(filepath); err != nil {
-			handleError(err)
-		}
-
-	case "ecdsa":
-		key := key.NewECDSAKey(elliptic.P256())
-
-		log.Info("Generating Keys")
-		if err := key.Generate(); err != nil {
-			handleError(err)
-		}
-
-		log.Info("Exporting Keys")
-		if err := key.Export(filepath); err != nil {
-			handleError(err)
+	if len(os.Args) != 3 {
+		if len(os.Args) != 5 {
+			handleError(errors.New("insufficient arguments"))
 		}
 	}
 }
 
 func handleError(err error) {
 	log.Error(err.Error())
-	os.Exit(1)
+	os.Exit(0)
 }

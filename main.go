@@ -35,13 +35,13 @@ func main() {
 	case "ecdsa":
 		var curve elliptic.Curve
 
-		if os.Args[2] == "P224" {
+		if os.Args[2] == "p224" {
 			curve = elliptic.P224()
-		} else if os.Args[2] == "P256" {
+		} else if os.Args[2] == "p256" {
 			curve = elliptic.P256()
-		} else if os.Args[2] == "P384" {
+		} else if os.Args[2] == "p384" {
 			curve = elliptic.P384()
-		} else if os.Args[2] == "P521" {
+		} else if os.Args[2] == "p521" {
 			curve = elliptic.P521()
 		} else {
 			handleError(errors.New("unsupported ecdsa curve"))

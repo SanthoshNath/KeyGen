@@ -10,11 +10,11 @@ import (
 
 type ED25519Key struct {
 	privateKey ed25519.PrivateKey
-	publicKey ed25519.PublicKey
+	publicKey  ed25519.PublicKey
 }
 
 func NewED25519Key() *ED25519Key {
-	return &ED25519Key{ ed25519.PrivateKey{}, ed25519.PublicKey{}}
+	return &ED25519Key{ed25519.PrivateKey{}, ed25519.PublicKey{}}
 }
 
 func (ed25519Key *ED25519Key) Generate() error {

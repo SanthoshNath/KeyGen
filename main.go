@@ -84,6 +84,9 @@ func main() {
 		if err := keys.Export(filepath); err != nil {
 			handleError(err)
 		}
+
+	default:
+		handleError(errors.New("command not found"))
 	}
 }
 

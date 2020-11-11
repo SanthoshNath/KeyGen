@@ -8,31 +8,44 @@ import (
 	"keygen/key"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var filepath = "./"
 
 func main() {
-	parseCommand()
+	parseKeygenCommand()
 
 	switch os.Args[1] {
 	case "rsa":
+		defer func() {
+			if err := recover(); err != nil {
+				handleError(errors.New("command not found"))
+			}
+		}()
+
 		bits, err := strconv.Atoi(os.Args[2])
 		if err != nil {
 			handleError(errors.New("invalid key size"))
 		}
 
-		key := key.NewRSAKey(bits)
+		keys := key.NewRSAKey(bits)
 
-		if err := key.Generate(); err != nil {
+		if err := keys.Generate(); err != nil {
 			handleError(err)
 		}
 
-		if err := key.Export(filepath); err != nil {
+		if err := keys.Export(filepath); err != nil {
 			handleError(err)
 		}
 
 	case "ecdsa":
+		defer func() {
+			if err := recover(); err != nil {
+				handleError(errors.New("command not found"))
+			}
+		}()
+
 		var curve elliptic.Curve
 
 		if os.Args[2] == "p224" {
@@ -47,19 +60,34 @@ func main() {
 			handleError(errors.New("unsupported ecdsa curve"))
 		}
 
-		key := key.NewECDSAKey(curve)
+		keys := key.NewECDSAKey(curve)
 
-		if err := key.Generate(); err != nil {
+		if err := keys.Generate(); err != nil {
 			handleError(err)
 		}
 
-		if err := key.Export(filepath); err != nil {
+		if err := keys.Export(filepath); err != nil {
+			handleError(err)
+		}
+
+	case "ed25519":
+		if len(os.Args) == 3 || len(os.Args) == 4 && os.Args[2] != "-o" || len(os.Args) > 4 {
+			handleError(errors.New("too many arguments"))
+		}
+
+		keys := key.NewED25519Key()
+
+		if err := keys.Generate(); err != nil {
+			handleError(err)
+		}
+
+		if err := keys.Export(filepath); err != nil {
 			handleError(err)
 		}
 	}
 }
 
-func parseCommand() {
+func parseKeygenCommand() {
 	if len(os.Args) <= 1 {
 		handleError(errors.New("command not found"))
 	}
@@ -74,17 +102,29 @@ func parseCommand() {
 				handleError(errors.New("invalid path"))
 			}
 		}()
-		filepath = os.Args[4]
+
+		var index int
+		for index = range os.Args {
+			if os.Args[index] == "-o" {
+				break
+			}
+		}
+
+		filepath = os.Args[index+1]
 	}
 
-	if len(os.Args) != 3 {
-		if len(os.Args) != 5 {
-			handleError(errors.New("insufficient arguments"))
-		}
+	if len(os.Args) > 5 {
+		handleError(errors.New("too many arguments"))
 	}
 }
 
 func handleError(err error) {
-	log.Error(err.Error())
+	errorString := strings.SplitAfter(err.Error(), ": ")
+	if len(errorString) == 1 {
+		log.Error(errorString[0])
+	} else {
+		log.Error(errorString[1])
+	}
+
 	os.Exit(0)
 }

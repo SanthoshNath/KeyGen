@@ -3,8 +3,9 @@ package main
 import (
 	"crypto/elliptic"
 	"errors"
+	"fmt"
+	"github.com/fatih/color"
 	flag "github.com/juju/gnuflag"
-	log "github.com/sirupsen/logrus"
 	"keygen/key"
 	"os"
 	"strconv"
@@ -122,11 +123,14 @@ func parseKeygenCommand() {
 }
 
 func handleError(err error) {
+	c := color.New(color.FgHiRed).Add(color.Bold)
+
 	errorString := strings.SplitAfter(err.Error(), ": ")
+
 	if len(errorString) == 1 {
-		log.Error(errorString[0])
+		fmt.Println(c.Sprint("ERROR ") + errorString[0])
 	} else {
-		log.Error(errorString[1])
+		fmt.Println(c.Sprint("ERROR ") + errorString[1])
 	}
 
 	os.Exit(0)

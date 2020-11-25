@@ -123,7 +123,7 @@ func parseKeygenCommand() {
 }
 
 func handleError(err error) {
-	c := color.New(color.FgHiRed).Add(color.Bold)
+	c := color.New(color.FgRed).Add(color.Bold)
 
 	errorString := strings.SplitAfter(err.Error(), ": ")
 

@@ -1,3 +1,3 @@
 ## KeyGen
 
-Generate new Public/Private Key pairs
+Generate new Public/Private key pairs
